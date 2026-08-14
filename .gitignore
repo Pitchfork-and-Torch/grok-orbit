@@ -1,0 +1,40 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Tauri / Rust build
+src-tauri/target
+src-tauri/gen/schemas
+
+# Local Orbit state and secrets (live under %LOCALAPPDATA%, never this tree)
+.env
+.env.*
+!.env.example
+cursor_api_key.txt
+cook.json
+consent.json
+**/profiles/
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
