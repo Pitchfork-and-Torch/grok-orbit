@@ -132,6 +132,16 @@ export type CookWell = {
   name: string;
   state: string;
   note?: string | null;
+  shipped?: string | null;
+  next?: string | null;
+};
+
+export type CookShip = {
+  id: string;
+  name: string;
+  shipped: string;
+  next?: string | null;
+  fresh?: boolean;
 };
 
 export type CookState = {
@@ -142,8 +152,10 @@ export type CookState = {
   last_waiting?: string[];
   last_board?: CookWell[];
   last_next?: string[];
+  last_ships?: CookShip[];
   staff_now?: number;
   ticks?: number;
+  interval_sec?: number;
 };
 
 export type GitPulse = {

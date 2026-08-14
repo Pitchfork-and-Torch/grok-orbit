@@ -265,6 +265,24 @@ textarea:focus-visible,
   color: var(--text);
 }
 
+.cook-ships {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.cook-ships li {
+  color: var(--text);
+}
+
+.cook-leftover {
+  color: var(--muted);
+  font-family: var(--font-mono);
+}
+
 .cook-roster {
   list-style: none;
   margin: 10px 0 0;
@@ -310,6 +328,10 @@ textarea:focus-visible,
 
 .cook-row.is-waiting .cook-state {
   color: var(--warn, #ffc857);
+}
+
+.cook-row.is-empty .cook-state {
+  color: var(--danger, #ff6b5a);
 }
 
 .sit-kicker {

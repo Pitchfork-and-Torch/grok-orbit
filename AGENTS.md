@@ -73,6 +73,8 @@ COOK: header COOK button (confirm-once) arms an in-app loop. Each tick (5 min) `
 
 Tide: the next tick rotates last-sent Grok wells to the back so waiting wells cook. Galaxy prints `Next wave:`. Desk-occupied, live pagers, and already-cooking windows still skip. Do not keep recooking VELA / LeoAware / INSTAR / Ghost while Orbit / AXIOM / SafeDeposit / orbitstack wait.
 
+Harvest: staff write `.orbit/cook-receipt.json` (ok, shipped, next, files, tests) and do not commit `.orbit/`. Galaxy lists last ships. A fresh ok receipt skips that well for 45 minutes. Empty turns (window closed, no receipt) stay at the front. Armed loop harvests every 20s; next wave is 90s after windows close, 300s while they stay open. Prompts carry mission excerpt, last ship, leftover, and git dirty. Still no Task Scheduler, no MCP arm, no live inject.
+
 Never leave Orbit, Edge, Brave, Grok Bot, or the Grok TUI Always-on-Top. Clear with `Clear-AlwaysOnTop.ps1 -All`. Pin only the operator-chosen window via `Pin-SelectedWindow.ps1`.
 
 Handoff: `get_handoff` builds a redacted pack. Never inject into a live TUI. `handoff_to_acp` starts a new Orbit ACP session in the linked project clone when one exists. Web sessions without a clone are copy-only. MCP `orbit_handoff` is pack-only.

@@ -14,6 +14,7 @@ dist-ssr
 __pycache__/
 *.py[cod]
 .pytest_cache/
+.orbit/
 
 # Tauri / Rust build
 src-tauri/target

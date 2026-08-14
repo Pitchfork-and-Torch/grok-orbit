@@ -2,7 +2,7 @@
 
 | Field | Value |
 | --- | --- |
-| Status | Phases 1-13 plus COOK and Tide (waiting wells rotate to the front of the next wave) |
+| Status | Phases 1-13 plus COOK, Tide, and Harvest (receipts, proof cooldown, 90s idle waves) |
 | Date | 2026-08-14 |
 | Canonical tree | `%USERPROFILE%\grok-orbit` |
 | Visibility | Private, proprietary. Private GitHub only. Never public. |
@@ -244,6 +244,7 @@ handoff_to_acp(id) -> new session id  // refuses live TUI
 | 13 | Apex: Situation leads with Next; `orbit_next` is cheap (no tasklist/index); Enter runs Clearance verb or opens Star; Star-only `git status --porcelain` (10s memo). |
 | COOK | Confirm-once header loop. Cap 4 Grok + 2 Cursor per 5 min tick. Galaxy roster: cooking / sent (window closed = done) / waiting (usually the 4-Grok cap). No Task Scheduler. |
 | Tide | COOK wave fairness. Last-sent Grok wells go to the back. Waiting wells (Orbit, AXIOM, SafeDeposit, orbitstack after wave 1) cook next. Galaxy shows Next wave. Desk/live/cook-running still skip. |
+| Harvest | COOK 10x. Staff write `.orbit/cook-receipt.json`. Galaxy shows last ships and leftovers. Fresh successful receipts skip for 45m. Empty turns stay in front. Idle cadence 90s when no cook windows; 300s while windows are open. Prompts include mission excerpt + last ship + git dirty. Harvest every 20s while armed. No Task Scheduler. |
 
 ## Open questions
 

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import type { AcpState, Attention, CookState, GitPulse, HandoffPack, Project, SearchHit, Session, SessionDetail, Snapshot } from "./types";
+import type { AcpState, Attention, CookShip, CookState, GitPulse, HandoffPack, Project, SearchHit, Session, SessionDetail, Snapshot } from "./types";
 import "./styles.css";
 
 type View = "galaxy" | "clearance" | "feed" | "web";
@@ -759,13 +759,23 @@ export default function App() {
               {nextWaveLine(cookBoard) ? (
                 <p className="cook-line cook-next">Next wave: {nextWaveLine(cookBoard)}</p>
               ) : null}
+              {shipLines(cookBoard).length > 0 ? (
+                <ul className="cook-ships">
+                  {shipLines(cookBoard).map((row) => (
+                    <li key={row.id}>
+                      <strong>{row.name}</strong> {row.shipped}
+                      {row.next ? <span className="cook-leftover"> next: {row.next}</span> : null}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
               {(cookBoard?.last_board || []).length > 0 ? (
                 <ul className="cook-roster">
                   {(cookBoard?.last_board || []).map((row) => (
                     <li key={row.id} className={`cook-row is-${row.state || "idle"}`}>
                       <span className="cook-name">{row.name || row.id}</span>
                       <span className="cook-state">{row.state || "idle"}</span>
-                      <span className="cook-note">{row.note || ""}</span>
+                      <span className="cook-note">{row.note || row.shipped || ""}</span>
                     </li>
                   ))}
                 </ul>
@@ -1564,11 +1574,25 @@ function nextWaveLine(board: CookState | null): string {
   const named = (board?.last_next || []).filter(Boolean);
   if (named.length) return named.join(", ");
   const waiting = (board?.last_board || [])
-    .filter((row) => row.state === "waiting")
+    .filter((row) => row.state === "waiting" || row.state === "empty")
     .map((row) => row.name || row.id)
     .filter(Boolean)
     .slice(0, 4);
   return waiting.join(", ");
+}
+
+function shipLines(board: CookState | null): CookShip[] {
+  const ships = (board?.last_ships || []).filter((row) => row.shipped);
+  if (ships.length) return ships.slice(0, 6);
+  return (board?.last_board || [])
+    .filter((row) => Boolean(row.shipped))
+    .map((row) => ({
+      id: row.id,
+      name: row.name || row.id,
+      shipped: row.shipped || "",
+      next: row.next,
+    }))
+    .slice(0, 6);
 }
 
 function projectCards(sessions: Session[], project: Project, showAllFinished: boolean) {

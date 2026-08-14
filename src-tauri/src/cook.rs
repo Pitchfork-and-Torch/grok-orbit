@@ -6,7 +6,9 @@ use std::process::Command;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::{Duration, Instant};
 
-const INTERVAL_SECS: u64 = 300;
+const BUSY_SECS: u64 = 300;
+const IDLE_SECS: u64 = 90;
+const HARVEST_SECS: u64 = 20;
 static LOOP_ON: AtomicBool = AtomicBool::new(false);
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -19,6 +21,24 @@ pub struct CookWell {
     pub state: String,
     #[serde(default)]
     pub note: Option<String>,
+    #[serde(default)]
+    pub shipped: Option<String>,
+    #[serde(default)]
+    pub next: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct CookShip {
+    #[serde(default)]
+    pub id: String,
+    #[serde(default)]
+    pub name: String,
+    #[serde(default)]
+    pub shipped: String,
+    #[serde(default)]
+    pub next: Option<String>,
+    #[serde(default)]
+    pub fresh: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -46,6 +66,8 @@ pub struct CookState {
     #[serde(default)]
     pub last_next: Vec<String>,
     #[serde(default)]
+    pub last_ships: Vec<CookShip>,
+    #[serde(default)]
     pub staff_now: u32,
 }
 
@@ -67,6 +89,7 @@ impl Default for CookState {
             last_waiting: Vec::new(),
             last_board: Vec::new(),
             last_next: Vec::new(),
+            last_ships: Vec::new(),
             staff_now: 0,
         }
     }
@@ -190,9 +213,71 @@ fn run_tick() -> Result<(), String> {
                     .collect()
             })
             .unwrap_or_default();
+        state.last_ships = v
+            .get("ships")
+            .and_then(|x| serde_json::from_value::<Vec<CookShip>>(x.clone()).ok())
+            .unwrap_or_default();
         state.staff_now = v.get("staff_now").and_then(|x| x.as_u64()).unwrap_or(0) as u32;
+        if let Some(sec) = v.get("interval_sec").and_then(|x| x.as_u64()) {
+            state.interval_sec = sec as u32;
+        }
     }
     state.ticks = state.ticks.saturating_add(1);
+    save_state(&state)
+}
+
+fn run_harvest() -> Result<(), String> {
+    let script = orbit_tree().join("scripts").join("cook.py");
+    if !script.exists() {
+        return Err(format!("missing {}", script.display()));
+    }
+    let mut cmd = Command::new("py");
+    cmd.arg("-3").arg(&script).arg("harvest");
+    cmd.stdin(std::process::Stdio::null());
+    #[cfg(windows)]
+    {
+        use std::os::windows::process::CommandExt;
+        cmd.creation_flags(0x0800_0000);
+    }
+    let out = cmd.output().map_err(|e| e.to_string())?;
+    let text = String::from_utf8_lossy(&out.stdout);
+    let parsed = serde_json::from_str::<serde_json::Value>(&text).ok();
+    let mut state = load_state();
+    if !state.armed {
+        return Ok(());
+    }
+    if let Some(v) = parsed.as_ref() {
+        if let Some(board) = v
+            .get("board")
+            .and_then(|x| serde_json::from_value::<Vec<CookWell>>(x.clone()).ok())
+        {
+            if !board.is_empty() {
+                state.last_board = board;
+            }
+        }
+        if let Some(ships) = v
+            .get("ships")
+            .and_then(|x| serde_json::from_value::<Vec<CookShip>>(x.clone()).ok())
+        {
+            state.last_ships = ships;
+        }
+        state.last_next = v
+            .get("next_wave")
+            .and_then(|x| x.as_array())
+            .map(|arr| {
+                arr.iter()
+                    .filter_map(|x| x.as_str().map(|s| s.to_string()))
+                    .collect()
+            })
+            .unwrap_or(state.last_next);
+        state.staff_now = v
+            .get("staff_now")
+            .and_then(|x| x.as_u64())
+            .unwrap_or(state.staff_now as u64) as u32;
+        if let Some(sec) = v.get("interval_sec").and_then(|x| x.as_u64()) {
+            state.interval_sec = sec as u32;
+        }
+    }
     save_state(&state)
 }
 
@@ -201,16 +286,28 @@ pub fn start_loop() {
     LOOP_ON.store(armed, Ordering::SeqCst);
     std::thread::spawn(|| {
         let mut last = Instant::now();
+        let mut last_harvest = Instant::now();
         loop {
             std::thread::sleep(Duration::from_secs(2));
             if !LOOP_ON.load(Ordering::SeqCst) || !load_state().armed {
                 continue;
             }
-            if last.elapsed() < Duration::from_secs(INTERVAL_SECS) {
+            let state = load_state();
+            let gap = if state.staff_now > 0 {
+                BUSY_SECS
+            } else {
+                IDLE_SECS
+            };
+            if last.elapsed() >= Duration::from_secs(gap) {
+                last = Instant::now();
+                last_harvest = Instant::now();
+                let _ = run_tick();
                 continue;
             }
-            last = Instant::now();
-            let _ = run_tick();
+            if last_harvest.elapsed() >= Duration::from_secs(HARVEST_SECS) {
+                last_harvest = Instant::now();
+                let _ = run_harvest();
+            }
         }
     });
 }
