@@ -1299,7 +1299,7 @@ export default function App() {
               )}
               {detail.session.live && (
                 <p className="warn-line">
-                  Live TUI pager. Orbit will not inject. Resume in Grok, or attach after it goes idle.
+                  Live TUI pager. Orbit will not inject. Bring the native window to the front, or attach after it goes idle.
                 </p>
               )}
               {attached && (
@@ -1806,9 +1806,17 @@ function commandList(snap: Snapshot | null, selected: string | null): Cmd[] {
     { id: "continue-handoff", label: "Continue in new Orbit ACP", hint: "clone path, no live inject", group: "Act" },
     { id: "new-acp", label: "New Orbit ACP session", hint: "ask mode, not yolo", group: "Act" },
   ];
+  const picked = (snap?.sessions || []).find((s) => s.id === selected);
+  if (picked && !picked.live && !picked.id.startsWith("web:")) {
+    cmds.push({
+      id: "act:resume_session:Resume launched",
+      label: "Resume selected in Grok",
+      hint: "new window; refuses live TUI",
+      group: "Act",
+    });
+  }
   if (selected) {
     cmds.push(
-      { id: "act:resume_session:Resume launched", label: "Resume selected in Grok", hint: "new window", group: "Act" },
       { id: "act:open_session_cwd:Opened cwd", label: "Open selected folder", hint: "explorer", group: "Act", kbd: "o" },
       { id: "act:reveal_session_dir:Opened session dir", label: "Reveal session files", hint: "disk", group: "Act" },
     );

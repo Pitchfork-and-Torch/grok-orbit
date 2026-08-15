@@ -357,12 +357,25 @@ pub fn session_detail(id: &str) -> Result<SessionDetail, String> {
     })
 }
 
-pub fn resume_in_grok(id: &str) -> Result<String, String> {
+pub fn resume_blocked_reason(
+    id: &str,
+    live: &std::collections::HashSet<String>,
+) -> Option<&'static str> {
     if is_web_id(id) {
-        return Err("web session; use Open in browser".into());
+        return Some("web session; use Open in browser");
     }
     if !is_session_id(id) {
-        return Err("invalid session id".into());
+        return Some("invalid session id");
+    }
+    if live.contains(id) {
+        return Some("refusing resume inject: live TUI pager. Use the native Grok window.");
+    }
+    None
+}
+
+pub fn resume_in_grok(id: &str) -> Result<String, String> {
+    if let Some(reason) = resume_blocked_reason(id, &tui_live_ids()) {
+        return Err(reason.into());
     }
     let detail = session_detail(id)?;
     let home = grok_home();
@@ -1357,6 +1370,29 @@ mod tests {
     fn fts_query_is_prefix_tokens() {
         assert_eq!(sanitize_fts("orbit feed!"), "orbit* feed*");
         assert_eq!(sanitize_fts("   "), "session");
+    }
+
+    #[test]
+    fn resume_refuses_live_tui_and_web() {
+        let mut live = std::collections::HashSet::new();
+        live.insert("01a00022-b643-7b40-9d7e-dc185c67e3c2".into());
+        let blocked = resume_blocked_reason("01a00022-b643-7b40-9d7e-dc185c67e3c2", &live)
+            .expect("live resume must refuse");
+        assert!(blocked.contains("live TUI"), "{blocked}");
+        let web = resume_blocked_reason(
+            "web:cursor:bc-00000000-0000-0000-0000-000000000001",
+            &live,
+        )
+        .expect("web resume must refuse");
+        assert!(web.contains("web session"), "{web}");
+        assert_eq!(
+            resume_blocked_reason("../auth.json", &live),
+            Some("invalid session id")
+        );
+        assert_eq!(
+            resume_blocked_reason("01a00000-0000-7000-8000-000000000099", &live),
+            None
+        );
     }
 
     #[test]

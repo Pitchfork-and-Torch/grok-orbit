@@ -168,6 +168,18 @@ def main() -> int:
             assert pack.get("inject_ok") is False, pack
             assert "ORBIT HANDOFF" in (pack.get("text") or ""), pack
             print("OK orbit handoff refuse", pack.get("reason"))
+            refused = send(
+                proc,
+                {
+                    "jsonrpc": "2.0",
+                    "id": 11,
+                    "method": "tools/call",
+                    "params": {"name": "orbit_resume", "arguments": {"id": live[0]["id"]}},
+                },
+            )
+            resume_body = json.loads(refused["result"]["content"][0]["text"])
+            assert "refusing" in str(resume_body.get("error") or ""), resume_body
+            print("OK orbit resume refuse live")
         return 0
     except Exception as e:
         err = ""

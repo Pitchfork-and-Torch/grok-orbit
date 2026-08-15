@@ -201,7 +201,7 @@ impl AcpHub {
         }
         if refuse_live_tui(id, &tui_live_ids()) {
             return Err(
-                "refusing ACP attach: that session is a live Grok TUI pager. Use Resume in Grok."
+                "refusing ACP attach: that session is a live Grok TUI pager. Use the native Grok window."
                     .into(),
             );
         }
