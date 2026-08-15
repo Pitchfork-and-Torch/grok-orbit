@@ -137,6 +137,11 @@ def main() -> int:
 
     live_refuse()
 
+    code, out = run(PY + [str(ROOT / "scripts" / "resume_guard_test.py")], timeout=20)
+    print(out.strip())
+    if code != 0:
+        failed.append("resume-guard")
+
     code, out = run(PY + [str(ROOT / "scripts" / "handoff_test.py")], timeout=40)
     print(out.strip())
     if code != 0:
