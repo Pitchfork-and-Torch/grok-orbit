@@ -10,7 +10,6 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-HOME = Path(os.environ.get("USERPROFILE") or Path.home())
 PY = [sys.executable]
 
 
@@ -41,20 +40,24 @@ def run(cmd: list[str], cwd: Path | None = None, timeout: int = 180) -> tuple[in
 
 
 def live_refuse() -> None:
-    path = HOME / ".grok" / "active_sessions.json"
-    rows = json.loads(path.read_text(encoding="utf-8"))
+    from snapshot import grok_home, pid_alive, read_json
+
+    path = grok_home() / "active_sessions.json"
+    rows = read_json(path)
+    if rows is None:
+        # Fresh machine or GROK_HOME without a pager index. Same tolerance as snapshot.py.
+        print("OK live-refuse skipped (no active_sessions.json)")
+        return
+    if not isinstance(rows, list):
+        print("OK live-refuse skipped (active_sessions.json not a list)")
+        return
     live = [r for r in rows if isinstance(r, dict) and r.get("session_id") and r.get("pid")]
     if not live:
         print("OK live-refuse skipped (no live pagers)")
         return
     sid = live[0]["session_id"]
     # Same rule Orbit ACP uses.
-    import ctypes
-
-    handle = ctypes.windll.kernel32.OpenProcess(0x1000, False, int(live[0]["pid"]))
-    alive = bool(handle)
-    if handle:
-        ctypes.windll.kernel32.CloseHandle(handle)
+    alive = pid_alive(int(live[0]["pid"]))
     if alive:
         print("OK live-refuse would block", sid[:8], "pid", live[0]["pid"])
     else:

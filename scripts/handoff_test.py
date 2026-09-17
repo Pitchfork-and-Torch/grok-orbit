@@ -2,11 +2,8 @@
 
 from __future__ import annotations
 
-import json
-from pathlib import Path
-
 import handoff
-from snapshot import grok_home, redact
+from snapshot import grok_home, read_json, redact
 
 
 def main() -> int:
@@ -14,7 +11,9 @@ def main() -> int:
     assert dirty == "token [redacted] x", dirty
 
     path = grok_home() / "active_sessions.json"
-    rows = json.loads(path.read_text(encoding="utf-8"))
+    # Fresh machines have no pager index. Same tolerance as snapshot.live_sessions.
+    rows = read_json(path)
+    rows = rows if isinstance(rows, list) else []
     live = [r for r in rows if isinstance(r, dict) and r.get("session_id")]
     if live:
         pack = handoff.build_handoff(str(live[0]["session_id"]))
