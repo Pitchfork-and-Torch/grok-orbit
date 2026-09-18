@@ -178,15 +178,21 @@ def session_detail(sid: str) -> dict:
 
 
 def live_ids() -> set[str]:
+    # Same tolerant reader as snapshot.live_sessions / handoff_test.
+    # Corrupt JSON or a non-int pid must not crash MCP focus/resume gates.
+    from snapshot import read_json
+
     path = grok_home() / "active_sessions.json"
-    try:
-        rows = json.loads(path.read_text(encoding="utf-8"))
-    except OSError:
-        return set()
+    rows = read_json(path)
     out = set()
     for row in rows if isinstance(rows, list) else []:
+        if not isinstance(row, dict):
+            continue
         sid = str(row.get("session_id") or "")
-        pid = int(row.get("pid") or 0)
+        try:
+            pid = int(row.get("pid") or 0)
+        except (TypeError, ValueError):
+            continue
         if UUID_RE.match(sid) and pid_alive(pid):
             out.add(sid)
     return out

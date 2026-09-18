@@ -55,17 +55,19 @@ def acp_cwd_for(session: dict) -> str:
 
 
 def live_ids() -> set[str]:
-    path = grok_home() / "active_sessions.json"
-    try:
-        rows = json.loads(path.read_text(encoding="utf-8"))
-    except Exception:
-        return set()
-    from snapshot import pid_alive
+    from snapshot import pid_alive, read_json
 
+    path = grok_home() / "active_sessions.json"
+    rows = read_json(path)
     out = set()
     for row in rows if isinstance(rows, list) else []:
+        if not isinstance(row, dict):
+            continue
         sid = str(row.get("session_id") or "")
-        pid = int(row.get("pid") or 0)
+        try:
+            pid = int(row.get("pid") or 0)
+        except (TypeError, ValueError):
+            continue
         if UUID_RE.match(sid) and pid_alive(pid):
             out.add(sid)
     return out
