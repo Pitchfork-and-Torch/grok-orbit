@@ -122,11 +122,17 @@ def live_sessions(home: Path) -> tuple[list[dict], dict]:
         return [], adapter
     out = []
     for row in raw if isinstance(raw, list) else []:
+        if not isinstance(row, dict):
+            continue
         sid = str(row.get("session_id") or "")
         if not UUID_RE.match(sid):
             continue
         cwd = row.get("cwd") or ""
-        pid = int(row.get("pid") or 0)
+        try:
+            pid = int(row.get("pid") or 0)
+        except (TypeError, ValueError):
+            # Corrupt pager index must not kill Galaxy collect (MCP live_ids already soft).
+            continue
         alive = pid_alive(pid)
         encoded = encode_cwd(cwd)
         disk = home / "sessions" / encoded / sid

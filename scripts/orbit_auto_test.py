@@ -150,6 +150,11 @@ def main() -> int:
     if code != 0:
         failed.append("handoff")
 
+    code, out = run(PY + [str(ROOT / "scripts" / "snapshot_live_test.py")], timeout=20)
+    print(out.strip())
+    if code != 0:
+        failed.append("snapshot-live")
+
     code, out = run(PY + [str(ROOT / "scripts" / "projects_test.py")], timeout=20)
     print(out.strip())
     if code != 0:
