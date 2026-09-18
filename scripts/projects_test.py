@@ -63,6 +63,12 @@ def main() -> int:
     assert normalize_remote("git@github.com:Pitchfork-and-Torch/instar.git") == (
         "github.com/pitchfork-and-torch/instar"
     )
+    assert normalize_remote("ssh://git@github.com:22/Pitchfork-and-Torch/vela.git") == (
+        "github.com/pitchfork-and-torch/vela"
+    )
+    assert normalize_remote("ssh://git@github.com/Pitchfork-and-Torch/vela.git") == (
+        "github.com/pitchfork-and-torch/vela"
+    )
     assert contains_kw("v3.14 D/600 reclaim on leocc_v1", "leocc_v1")
     assert not contains_kw("orbitstack CCA", "grok orbit")
 

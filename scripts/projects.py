@@ -122,6 +122,8 @@ def normalize_remote(url: str) -> str:
     raw = raw.rstrip("/")
     if raw.endswith(".git"):
         raw = raw[:-4]
+    # ssh://git@host:port/path left host:port/path after scheme strip; drop port.
+    raw = re.sub(r"^([^/:]+):\d+/", r"\1/", raw)
     return raw.lower()
 
 
