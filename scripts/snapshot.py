@@ -302,6 +302,10 @@ def tail_events_memo(path: Path, nbytes: int = 24000, limit: int = 6) -> list[di
 
 
 def tail_events(path: Path, nbytes: int = 24000, limit: int = 6) -> list[dict]:
+    # Python's events[-0:] / data[-0:] is the whole sequence. Zero or negative
+    # limits must fail closed to empty, not dump the entire jsonl tail.
+    if limit <= 0 or nbytes <= 0:
+        return []
     try:
         data = path.read_bytes()
     except OSError:
