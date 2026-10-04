@@ -1,0 +1,406 @@
+function landing(env) {
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Grok Orbit - one panel for every local agent</title>
+<meta name="description" content="Local Windows command center for Grok CLI, Grok Bot, grok.com, and other model keys. Download free. $19 unlocks Resume, COOK, Orbit ACP, hand off, and Cursor follow-up."/>
+<link rel="canonical" href="https://orbit.jonbailey.xyz/"/>
+<meta property="og:title" content="Grok Orbit"/>
+<meta property="og:description" content="One local panel for Grok CLI, Grok Bot, grok.com, and other model keys. Download free. $19 unlocks Resume, COOK, Orbit ACP, hand off, and Cursor follow-up."/>
+<meta property="og:image" content="https://orbit.jonbailey.xyz/og.jpg?v=1.0.2"/>
+<meta property="og:image:width" content="1200"/>
+<meta property="og:image:height" content="630"/>
+<meta property="og:image:type" content="image/jpeg"/>
+<meta property="og:url" content="https://orbit.jonbailey.xyz/"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://orbit.jonbailey.xyz/og.jpg?v=1.0.2"/>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+{"@type":"Question","name":"What is free, and what do I pay $19 for?","acceptedAnswer":{"@type":"Answer","text":"Download, install, Galaxy, Clearance, connecting Grok CLI / Grok Bot / grok.com / Cursor / other keys, opening folders, and copying a handoff pack are free. $19 is a one-time key that unlocks verbs that start work: Resume, COOK, Orbit ACP, Continue in Orbit ACP, and Cursor follow-up."}},
+{"@type":"Question","name":"What does Resume do?","acceptedAnswer":{"@type":"Answer","text":"Resume opens a new Grok console on that session. It does not type into a Grok window you already have open. Pick a real CLI session, then Resume in Grok. Sample cards cannot resume."}},
+{"@type":"Question","name":"What does COOK do?","acceptedAnswer":{"@type":"Answer","text":"COOK is a header button. You confirm once. Orbit then runs an in-app loop and starts new one-shot Grok consoles on named project wells that have a local clone, are not claimed by another desk, and have no live pager. Idle Cursor agents can get a capped follow-up. When a cook window closes, that turn finished. STOP COOK turns the loop off. COOK does not use Task Scheduler, does not inject into live pagers, and does not auto-approve tools."}},
+{"@type":"Question","name":"What is Orbit ACP?","acceptedAnswer":{"@type":"Answer","text":"Orbit ACP is an agent session Orbit owns. You can start a new session in a project folder, attach an idle Grok session, send a prompt, and answer permission asks one by one. It never attaches a live TUI pager. It never runs with always-approve."}},
+{"@type":"Question","name":"What is hand off?","acceptedAnswer":{"@type":"Answer","text":"Copy handoff is free. It copies a redacted pack (project, branch, last notes) to the clipboard. Continue in Orbit ACP is paid. It starts a new Orbit ACP in the linked project clone and feeds it that pack. Web chats with no local clone stay copy-only."}},
+{"@type":"Question","name":"What is Cursor follow-up?","acceptedAnswer":{"@type":"Answer","text":"Cursor follow-up sends one extra run to an existing Cursor Cloud Agent after you confirm. Busy agents refuse; open them in the browser instead. This is only for cursor.com agents."}},
+{"@type":"Question","name":"Will Orbit take over a Grok window I already have open?","acceptedAnswer":{"@type":"Answer","text":"No. Resume, COOK, ACP attach, and Continue in Orbit ACP all refuse a live Grok TUI. They open new work or they copy. They do not hijack the pager you are looking at."}},
+{"@type":"Question","name":"Why does Sample refuse Resume?","acceptedAnswer":{"@type":"Answer","text":"Sample is a fake well so an empty install is not a blank board. It is not a real Grok session, so Resume has nothing to open."}},
+{"@type":"Question","name":"How do I unlock?","acceptedAnswer":{"@type":"Answer","text":"Email on this page or in the app, type the 6-digit code in the same tab, pay $19 once on Stripe, then activate the key. Galaxy stays usable if you never pay."}},
+{"@type":"Question","name":"Is the Windows installer signed?","acceptedAnswer":{"@type":"Answer","text":"No. The installer is not Authenticode-signed. SmartScreen will say the publisher is unknown. Click More info, then Run anyway. Leave SmartScreen on."}}
+]}
+</script>
+<link rel="preconnect" href="https://api.fontshare.com"/>
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&f[]=clash-display@500,600&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  color-scheme:dark;
+  --void:#07080b;
+  --void-2:#0c0f14;
+  --panel:#10141a;
+  --line:rgba(255,255,255,.08);
+  --text:#e8eee6;
+  --muted:#8d9689;
+  --ion:#7dffa6;
+  --ion-dim:rgba(125,255,166,.14);
+  --warn:#e8b84a;
+  --danger:#ff6b5a;
+  --glass:rgba(12,16,22,.72);
+  --focus:#7dffa6;
+  --font-display:"Clash Display",Satoshi,system-ui,sans-serif;
+  --font-sans:Satoshi,system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--void);color:var(--text);font-family:var(--font-sans);line-height:1.55}
+body{min-height:100vh;background:
+  radial-gradient(900px 420px at 78% 8%, rgba(125,255,166,.07), transparent 58%),
+  radial-gradient(700px 380px at 0% 100%, rgba(108,182,255,.05), transparent 50%),
+  var(--void)}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;opacity:.045;z-index:8;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+img{max-width:100%;height:auto;display:block}
+a{color:var(--ion)}
+h1,h2{font-family:var(--font-display);font-weight:500;letter-spacing:-.02em;margin:0 0 10px}
+h1{font-size:clamp(2.1rem,4.4vw,3.1rem);line-height:1.05}
+h2{font-size:1.35rem}
+.shell{width:min(1180px,calc(100% - 40px));margin:0 auto}
+.top{display:flex;justify-content:space-between;align-items:center;padding:22px 0 18px}
+.brand{font-family:var(--font-display);letter-spacing:.18em;text-transform:uppercase;font-size:12px;color:var(--ion)}
+.top a.quiet{color:var(--muted);text-decoration:none;font-size:13px}
+.top a.quiet:hover{color:var(--text)}
+.top nav{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.skip{position:absolute;left:-999px;top:8px;z-index:20}
+.skip:focus{left:12px;background:var(--ion);color:#071109;padding:8px 12px;border-radius:8px;font-weight:700;text-decoration:none}
+.hero{position:relative;border-radius:22px;overflow:hidden;border:1px solid var(--line);
+  box-shadow:0 30px 80px rgba(0,0,0,.38), inset 0 1px 0 rgba(255,255,255,.06)}
+.hero-art{width:100%;aspect-ratio:1600/720;object-fit:cover;display:block}
+.hero-scrim{position:absolute;inset:0;background:linear-gradient(90deg,rgba(7,8,11,.12) 42%,rgba(7,8,11,.18) 52%,rgba(7,8,11,.28) 100%)}
+.hero-panel{position:absolute;top:50%;right:3.4%;transform:translateY(-50%);width:min(400px,46%);
+  background:var(--glass);-webkit-backdrop-filter:blur(18px) saturate(1.25);backdrop-filter:blur(18px) saturate(1.25);
+  border:1px solid rgba(255,255,255,.14);border-radius:18px;padding:22px 22px 18px;
+  box-shadow:0 18px 50px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.16)}
+.kicker{margin:0 0 8px;color:var(--ion);letter-spacing:.16em;text-transform:uppercase;font-size:11px}
+.panel-title{margin:0 0 6px;font-size:1.55rem}
+.lead{color:var(--muted);margin:0 0 14px}
+.downloads{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px}
+.downloads a{text-decoration:none}
+button,.btn{appearance:none;border:0;border-radius:10px;padding:11px 14px;font:inherit;font-weight:700;cursor:pointer}
+.btn-primary,button[type=submit],.downloads .btn-primary{background:var(--ion);color:#071109}
+.btn-ghost,button.ghost{background:transparent;color:var(--text);border:1px solid rgba(255,255,255,.16);font-weight:500;margin:0}
+button:disabled{opacity:.55;cursor:wait}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.rule{height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);margin:4px 0 14px;border:0}
+.steps{display:flex;gap:6px;list-style:none;padding:0;margin:0 0 12px;flex-wrap:wrap}
+.steps li{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:4px 8px}
+.steps li.on{color:#071109;background:var(--ion);border-color:var(--ion)}
+label{display:block;margin:10px 0 6px;font-size:12px;color:var(--muted)}
+input{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:rgba(8,10,14,.72);color:var(--text);font:inherit}
+#code{letter-spacing:.28em;font-size:1.2rem}
+.hint,.fine{font-size:12.5px;color:var(--muted);margin:8px 0 0}
+.err{color:var(--danger);margin:10px 0 0}
+.ok{color:var(--ion);margin:10px 0 0}
+.hidden{display:none}
+main{padding:36px 0 72px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:0 0 14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px 20px 18px;
+  box-shadow:0 10px 28px rgba(0,0,0,.18)}
+.card p:last-child{margin-bottom:0}
+.notice{border-color:rgba(232,184,74,.35);background:linear-gradient(180deg,#16130c,#12110d)}
+.notice h2{color:var(--warn)}
+.list{margin:0;padding-left:1.15rem}
+.list li{margin:8px 0}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:6px;padding:1px 6px;background:#0c1016}
+.tools,.faq-block{margin:22px 0 0}
+.tools > p.lead,.faq-block > p.lead{max-width:68ch}
+.verbs{display:grid;gap:10px;margin:16px 0 0}
+.verb{display:grid;grid-template-columns:minmax(148px,190px) 1fr;gap:6px 18px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px 18px;box-shadow:0 10px 28px rgba(0,0,0,.18)}
+.verb h3{margin:0;font-family:var(--font-display);font-size:1.12rem;font-weight:500}
+.verb .tag{margin:4px 0 0;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ion)}
+.verb p{margin:0;color:var(--muted)}
+.faq-list{margin:16px 0 0}
+.faq-list details{background:var(--panel);border:1px solid var(--line);border-radius:14px;margin:0 0 8px}
+.faq-list summary{cursor:pointer;padding:14px 16px;font-weight:700;list-style:none;min-height:44px}
+.faq-list summary::-webkit-details-marker{display:none}
+.faq-list summary::after{content:"+";float:right;color:var(--muted);font-weight:500}
+.faq-list details[open] summary{border-bottom:1px solid var(--line)}
+.faq-list details[open] summary::after{content:"-"}
+.faq-list .ans{padding:12px 16px 16px;margin:0;color:var(--muted)}
+.faq-list .ans p{margin:0 0 10px}
+.faq-list .ans p:last-child{margin-bottom:0}
+@media(max-width:920px){
+  .hero-panel{position:relative;top:auto;right:auto;transform:none;width:auto;margin:0;border-radius:0 0 22px 22px}
+  .hero-scrim{background:linear-gradient(180deg,transparent 40%,rgba(7,8,11,.55))}
+  .grid,.split,.verb{grid-template-columns:1fr}
+}
+@media(prefers-reduced-transparency:reduce){
+  .hero-panel{background:#12161c;backdrop-filter:none;-webkit-backdrop-filter:none}
+}
+@media(prefers-reduced-motion:reduce){
+  *{transition:none!important;animation:none!important}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="shell top">
+  <div class="brand">Orbit</div>
+  <nav aria-label="On this page">
+    <a class="quiet" href="#tools">Paid tools</a>
+    <a class="quiet" href="#faq">FAQ</a>
+    <a class="quiet" href="#how">How to set up</a>
+  </nav>
+</header>
+<section class="shell hero" aria-label="Grok Orbit">
+  <img class="hero-art" src="/hero.jpg?v=1.0.2" width="1600" height="720" alt="Grok Orbit: one panel for Grok CLI, Grok Bot, grok.com, and other model keys." fetchpriority="high"/>
+  <div class="hero-scrim" aria-hidden="true"></div>
+  <aside class="hero-panel" id="buy">
+    <p class="kicker">Windows desktop</p>
+    <h2 class="panel-title">Install free</h2>
+    <p class="lead">No payment to download. Watch your fleet first. Unlock later to act.</p>
+    <div class="downloads">
+      <a class="btn btn-primary" href="/download">Download installer</a>
+      <a class="btn btn-ghost" href="/download?file=portable">Portable exe</a>
+    </div>
+    <hr class="rule"/>
+    <p class="kicker">Optional</p>
+    <h2 class="panel-title" style="font-size:1.15rem">Unlock actions, $19</h2>
+    <p class="fine">Galaxy stays free. Pay once to resume, COOK, run ACP, or hand off. <a href="#tools">What each tool does</a>.</p>
+    <ol class="steps" aria-label="Unlock steps">
+      <li id="dot-email" class="on">Email</li>
+      <li id="dot-code">Code</li>
+      <li id="dot-pay">Pay</li>
+    </ol>
+    <form id="f" novalidate>
+      <div id="step-email">
+        <label for="email">Email</label>
+        <input id="email" type="email" autocomplete="email" required placeholder="you@example.com"/>
+        <button type="submit" id="send">Email me a code</button>
+        <p class="hint">This page stays open. Check mail, then type the code here.</p>
+      </div>
+      <div id="step-code" class="hidden">
+        <label for="code">Six-digit code</label>
+        <input id="code" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="123456"/>
+        <button type="submit" id="check">Verify code</button>
+        <button type="button" class="ghost" id="resend">Resend</button>
+        <p class="hint">Valid 30 minutes. Keep this tab open.</p>
+      </div>
+      <div id="step-pay" class="hidden">
+        <p class="lead">Email verified. Pay $19 once for an action key.</p>
+        <button type="submit" id="pay">Pay $19</button>
+      </div>
+    </form>
+    <p class="err" id="err" hidden></p>
+    <p class="ok" id="ok" hidden></p>
+  </aside>
+</section>
+<main class="shell" id="main">
+  <div class="grid">
+    <article class="card">
+      <p class="kicker">See</p>
+      <h2>One situation bar</h2>
+      <p class="fine">Live Grok CLI pagers, desk claims, and clearance in one glance. The official dashboard only sees the pager you are inside.</p>
+    </article>
+    <article class="card">
+      <p class="kicker">Connect</p>
+      <h2>Bot, web, keys</h2>
+      <p class="fine">Grok Bot process status, consented grok.com chats, Cursor Cloud Agents, optional OpenAI / Anthropic / Gemini / xAI keys. Tokens stay on this PC.</p>
+    </article>
+    <article class="card">
+      <p class="kicker">Act later</p>
+      <h2>Pay only to move</h2>
+      <p class="fine">Observe is free. $19 unlocks resume, COOK, ACP, hand off, and Cursor follow-up. Empty machines get a well marked Sample. <a href="#faq">FAQ</a>.</p>
+    </article>
+  </div>
+  <div class="split">
+    <section class="card notice">
+      <h2>Windows will warn you</h2>
+      <p>The installer is <strong>not Authenticode-signed</strong>. SmartScreen will say the publisher is unknown. That is expected, not a virus verdict.</p>
+      <ol class="list">
+        <li>Run the setup exe.</li>
+        <li>If Windows says it protected your PC, click <strong>More info</strong>, then <strong>Run anyway</strong>.</li>
+        <li>Leave SmartScreen on.</li>
+      </ol>
+    </section>
+    <section class="card" id="how">
+      <h2>How to set up</h2>
+      <ol class="list">
+        <li>Download from the hero. No payment.</li>
+        <li>Install, then click through SmartScreen as at left.</li>
+        <li>Open Orbit. Connect Grok CLI, Grok Bot, grok.com. Empty PCs show Sample.</li>
+        <li>Watch Galaxy. Unlock in the app or this panel when you want to act. See <a href="#tools">paid tools</a>.</li>
+        <li><kbd>g</kbd> Galaxy <kbd>c</kbd> Clearance <kbd>w</kbd> Web. Ctrl+Shift+O from the tray.</li>
+      </ol>
+    </section>
+  </div>
+  <section class="card tools" id="tools">
+    <p class="kicker">Paid tools</p>
+    <h2>What $19 actually does</h2>
+    <p class="lead">Observe stays free. The key unlocks verbs that start work on your machine. None of them type into a Grok window you already have open.</p>
+    <div class="verbs">
+      <article class="verb">
+        <div>
+          <h3>Resume</h3>
+          <p class="tag">New Grok console</p>
+        </div>
+        <p>Opens a new Grok console on the session you picked. It does not inject into a live TUI. Sample cards cannot resume because they are not a real session.</p>
+      </article>
+      <article class="verb">
+        <div>
+          <h3>COOK</h3>
+          <p class="tag">In-app staff loop</p>
+        </div>
+        <p>Header button, confirm once. Orbit then starts new one-shot Grok consoles on named project wells that have a local clone, are not desk-claimed, and have no live pager. Idle Cursor agents can get a capped follow-up. A cook window that closes means that turn finished. STOP COOK turns the loop off. Already-open consoles stay up. No Task Scheduler. No auto-approve.</p>
+      </article>
+      <article class="verb">
+        <div>
+          <h3>Orbit ACP</h3>
+          <p class="tag">Ask-mode agent</p>
+        </div>
+        <p>An agent session Orbit owns. Start one in a project folder, or attach an idle Grok session. Send a prompt. Answer permission asks one by one. Never attaches a live TUI. Never runs with always-approve.</p>
+      </article>
+      <article class="verb">
+        <div>
+          <h3>Hand off</h3>
+          <p class="tag">Copy free, continue paid</p>
+        </div>
+        <p>Copy handoff is free. It copies a redacted pack (project, branch, last notes). Continue in Orbit ACP is paid. It starts a new Orbit ACP in the linked project clone and feeds it that pack. Web chats with no local clone stay copy-only.</p>
+      </article>
+      <article class="verb">
+        <div>
+          <h3>Cursor follow-up</h3>
+          <p class="tag">One extra Cloud Agent run</p>
+        </div>
+        <p>After you confirm, Orbit posts one extra run to an existing Cursor Cloud Agent. Busy agents refuse; open them in the browser instead. This is only for cursor.com agents.</p>
+      </article>
+    </div>
+  </section>
+  <section class="card faq-block" id="faq">
+    <p class="kicker">FAQ</p>
+    <h2>Paid tools, answered</h2>
+    <p class="lead">Short answers that match what the app actually does. Open a question for the rest.</p>
+    <div class="faq-list">
+      <details>
+        <summary>What is free, and what do I pay $19 for?</summary>
+        <div class="ans">
+          <p>Download, install, Galaxy, Clearance, connecting Grok CLI / Grok Bot / grok.com / Cursor / other keys, opening folders, and copying a handoff pack are free.</p>
+          <p>$19 is a one-time key that unlocks verbs that start work: Resume, COOK, Orbit ACP, Continue in Orbit ACP, and Cursor follow-up.</p>
+        </div>
+      </details>
+      <details>
+        <summary>What does Resume do?</summary>
+        <div class="ans">
+          <p>Resume opens a new Grok console on that session. It does not type into a Grok window you already have open. Pick a real CLI session, then Resume in Grok. Sample cards cannot resume.</p>
+        </div>
+      </details>
+      <details>
+        <summary>What does COOK do?</summary>
+        <div class="ans">
+          <p>COOK is a header button. You confirm once. Orbit then runs an in-app loop and starts new one-shot Grok consoles on named project wells that have a local clone, are not claimed by another desk, and have no live pager. Idle Cursor agents can get a capped follow-up. When a cook window closes, that turn finished. STOP COOK turns the loop off. COOK does not use Task Scheduler, does not inject into live pagers, and does not auto-approve tools.</p>
+        </div>
+      </details>
+      <details>
+        <summary>What is Orbit ACP?</summary>
+        <div class="ans">
+          <p>Orbit ACP is an agent session Orbit owns. You can start a new session in a project folder, attach an idle Grok session, send a prompt, and answer permission asks one by one. It never attaches a live TUI pager. It never runs with always-approve.</p>
+        </div>
+      </details>
+      <details>
+        <summary>What is hand off?</summary>
+        <div class="ans">
+          <p>Copy handoff is free. It copies a redacted pack (project, branch, last notes) to the clipboard. Continue in Orbit ACP is paid. It starts a new Orbit ACP in the linked project clone and feeds it that pack. Web chats with no local clone stay copy-only.</p>
+        </div>
+      </details>
+      <details>
+        <summary>What is Cursor follow-up?</summary>
+        <div class="ans">
+          <p>Cursor follow-up sends one extra run to an existing Cursor Cloud Agent after you confirm. Busy agents refuse; open them in the browser instead. This is only for cursor.com agents.</p>
+        </div>
+      </details>
+      <details>
+        <summary>Will Orbit take over a Grok window I already have open?</summary>
+        <div class="ans">
+          <p>No. Resume, COOK, ACP attach, and Continue in Orbit ACP all refuse a live Grok TUI. They open new work or they copy. They do not hijack the pager you are looking at.</p>
+        </div>
+      </details>
+      <details>
+        <summary>Why does Sample refuse Resume?</summary>
+        <div class="ans">
+          <p>Sample is a fake well so an empty install is not a blank board. It is not a real Grok session, so Resume has nothing to open.</p>
+        </div>
+      </details>
+      <details>
+        <summary>How do I unlock?</summary>
+        <div class="ans">
+          <p>Email on this page or in the app, type the 6-digit code in the same tab, pay $19 once on Stripe, then activate the key. Galaxy stays usable if you never pay.</p>
+        </div>
+      </details>
+      <details>
+        <summary>Is the Windows installer signed?</summary>
+        <div class="ans">
+          <p>No. The installer is not Authenticode-signed. SmartScreen will say the publisher is unknown. Click More info, then Run anyway. Leave SmartScreen on.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const state={step:"email",email:"",token:""};
+function show(step){
+  state.step=step;
+  ["email","code","pay"].forEach(s=>{
+    $("step-"+s).classList.toggle("hidden", s!==step);
+    $("dot-"+s).classList.toggle("on", s===step);
+  });
+}
+function setErr(t){$("err").hidden=!t;$("err").textContent=t||"";$("ok").hidden=true;}
+function setOk(t){$("ok").hidden=!t;$("ok").textContent=t||"";$("err").hidden=true;}
+function busy(on){["send","check","resend","pay"].forEach(id=>{const b=$(id);if(b)b.disabled=!!on;});}
+async function post(path,body){
+  const r=await fetch(path,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok) throw new Error(d.error||("Request failed ("+r.status+")"));
+  return d;
+}
+async function sendCode(){
+  const email=$("email").value.trim().toLowerCase();
+  if(!email.includes("@")) throw new Error("Enter a valid email.");
+  state.email=email;
+  await post("/v1/register",{email});
+  show("code");
+  setOk("Code sent to "+email+". This tab stays put.");
+  $("code").focus();
+}
+$("resend").onclick=async()=>{
+  setErr("");
+  busy(true);
+  try{await sendCode();}catch(e){setErr(e.message);}
+  finally{busy(false);}
+};
+$("f").onsubmit=async(e)=>{
+  e.preventDefault();
+  setErr("");
+  busy(true);
+  try{
+    if(state.step==="email"){
+      await sendCode();
+    }else if(state.step==="code"){
+      const code=$("code").value.replace(/\\s+/g,"");
+      if(code.length<4) throw new Error("Enter the 6-digit code.");
+      const vd=await post("/v1/verify",{email:state.email,code});
+      state.token=vd.verify_token||"";
+      show("pay");
+      setOk("Email verified. Next is the $19 payment.");
+    }else if(state.step==="pay"){
+      const cd=await post("/v1/checkout",{email:state.email,verify_token:state.token});
+      if(!cd.url) throw new Error("Checkout did not return a URL.");
+      location.href=cd.url;
+    }
+  }catch(err){setErr(err.message);}
+  finally{busy(false);}
+};
+</script>
+</body>
+</html>`;
+  return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" } });
+}
