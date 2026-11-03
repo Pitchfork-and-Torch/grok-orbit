@@ -6,6 +6,15 @@ const CORS = {
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// Wrong code attempts allowed before the current code is thrown away.
+const MAX_CODE_TRIES = 5;
+// Per-IP limits: [max requests, window in seconds].
+const IP_LIMITS = {
+  register: [10, 3600],
+  verify: [20, 900],
+  activate: [30, 3600],
+};
+
 export default {
   async fetch(request, env) {
     if (request.method === "OPTIONS") return new Response(null, { headers: CORS });
@@ -25,18 +34,25 @@ export default {
       if (url.pathname === "/hero.jpg") return publicFile(env, "hero.jpg", "image/jpeg");
       if (url.pathname === "/og.jpg") return publicFile(env, "og.jpg", "image/jpeg");
       if (url.pathname === "/success" && request.method === "GET") return successPage(url, env);
-      if (url.pathname === "/v1/register" && request.method === "POST") return register(request, env);
-      if (url.pathname === "/v1/verify" && request.method === "POST") return verify(request, env);
+      if (url.pathname === "/v1/register" && request.method === "POST") {
+        return (await ipLimited(request, env, "register")) || register(request, env);
+      }
+      if (url.pathname === "/v1/verify" && request.method === "POST") {
+        return (await ipLimited(request, env, "verify")) || verify(request, env);
+      }
       if (url.pathname === "/v1/checkout" && request.method === "POST") return checkout(request, env);
       if (url.pathname === "/v1/paid" && request.method === "POST") return paid(request, env);
-      if (url.pathname === "/v1/activate" && request.method === "POST") return activate(request, env);
+      if (url.pathname === "/v1/activate" && request.method === "POST") {
+        return (await ipLimited(request, env, "activate")) || activate(request, env);
+      }
       if (url.pathname === "/v1/download" && request.method === "GET") return download(url, env);
       if (url.pathname === "/v1/stripe/webhook" && request.method === "POST") {
         return stripeWebhook(request, env);
       }
       return json({ error: "Not found" }, 404);
     } catch (err) {
-      return json({ error: err instanceof Error ? err.message : String(err) }, 500);
+      console.error("unhandled", err instanceof Error ? err.stack || err.message : String(err));
+      return json({ error: "Server error. Try again." }, 500);
     }
   },
 };
@@ -502,9 +518,12 @@ async function register(request, env) {
   const hourAgo = Date.now() - 3600_000;
   rec.hits = (rec.hits || []).filter((t) => t > hourAgo);
   if (rec.hits.length >= 5) return json({ error: "Too many codes. Try again later." }, 429);
-  const code = String(Math.floor(100000 + Math.random() * 900000));
+  const code = randomCode();
   rec.hits.push(Date.now());
-  rec.code = code;
+  // Store only a hash of the code, and reset the wrong-try counter for the new code.
+  rec.code = null;
+  rec.codeHash = await sha256(`${email}:${code}`);
+  rec.codeFails = 0;
   rec.codeExp = Date.now() + 30 * 60_000;
   await env.KV.put(`mail:${email}`, JSON.stringify(rec), { expirationTtl: 86400 });
   await sendMail(
@@ -522,12 +541,30 @@ async function verify(request, env) {
   const code = String(body.code || "").trim();
   if (!EMAIL_RE.test(email) || !code) return json({ error: "Email and code required" }, 400);
   const rec = await env.KV.get(`mail:${email}`, "json");
-  if (!rec || !rec.code || rec.codeExp < Date.now()) {
+  if (!rec || !rec.codeHash || rec.codeExp < Date.now()) {
     return json({ error: "Code expired. Request a new one." }, 400);
   }
-  if (rec.code !== code) return json({ error: "That code is not correct." }, 400);
+  if ((rec.codeFails || 0) >= MAX_CODE_TRIES) {
+    return json({ error: "Too many wrong tries. Request a new code." }, 429);
+  }
+  const ok = /^\d{6}$/.test(code) && timingSafeEqual(await sha256(`${email}:${code}`), rec.codeHash);
+  if (!ok) {
+    rec.codeFails = (rec.codeFails || 0) + 1;
+    if (rec.codeFails >= MAX_CODE_TRIES) {
+      // Burn the code so further guesses can never succeed.
+      rec.codeHash = null;
+      rec.codeExp = 0;
+    }
+    await env.KV.put(`mail:${email}`, JSON.stringify(rec), { expirationTtl: 86400 });
+    if (rec.codeFails >= MAX_CODE_TRIES) {
+      return json({ error: "Too many wrong tries. Request a new code." }, 429);
+    }
+    return json({ error: "That code is not correct." }, 400);
+  }
   rec.verified = true;
   rec.code = null;
+  rec.codeHash = null;
+  rec.codeFails = 0;
   const token = crypto.randomUUID();
   rec.verifyToken = token;
   rec.verifyExp = Date.now() + 2 * 3600_000;
@@ -713,6 +750,58 @@ async function download(url, env) {
   }
   if (env.DOWNLOAD_URL) return Response.redirect(env.DOWNLOAD_URL, 302);
   return json({ error: "Installer is not in the bucket yet." }, 404);
+}
+
+/** 6-digit code from the Web Crypto CSPRNG, without modulo bias. */
+function randomCode() {
+  const buf = new Uint32Array(1);
+  const limit = 4_294_000_000; // largest multiple of 1e6 below 2^32
+  do crypto.getRandomValues(buf);
+  while (buf[0] >= limit);
+  return String(buf[0] % 1_000_000).padStart(6, "0");
+}
+
+function timingSafeEqual(a, b) {
+  a = String(a);
+  b = String(b);
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
+function clientIp(request) {
+  // CF-Connecting-IP is set by Cloudflare and can't be spoofed by the client.
+  return request.headers.get("CF-Connecting-IP") || "unknown";
+}
+
+/**
+ * Per-IP rate limit. Uses a Workers rate-limit binding when one is configured
+ * (RL_REGISTER / RL_VERIFY / RL_ACTIVATE), and always applies a KV fixed-window
+ * counter as well. Returns a 429 Response when over the limit, else null.
+ */
+async function ipLimited(request, env, bucket) {
+  const ip = clientIp(request);
+  const binding = env[`RL_${bucket.toUpperCase()}`];
+  if (binding && typeof binding.limit === "function") {
+    const { success } = await binding.limit({ key: `${bucket}:${ip}` });
+    if (!success) return tooMany();
+  }
+  if (!env.KV) return null;
+  const [max, windowSec] = IP_LIMITS[bucket];
+  const windowId = Math.floor(Date.now() / 1000 / windowSec);
+  const key = `rl:${bucket}:${await sha256(ip)}:${windowId}`;
+  const count = Number((await env.KV.get(key)) || 0);
+  if (count >= max) return tooMany();
+  await env.KV.put(key, String(count + 1), { expirationTtl: Math.max(60, windowSec * 2) });
+  return null;
+}
+
+function tooMany() {
+  return new Response(JSON.stringify({ error: "Too many requests. Try again later." }), {
+    status: 429,
+    headers: { "Content-Type": "application/json", "Retry-After": "900", ...CORS },
+  });
 }
 
 async function readEmail(request) {
