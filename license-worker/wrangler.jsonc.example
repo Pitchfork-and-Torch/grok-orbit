@@ -14,6 +14,13 @@
   "kv_namespaces": [
     { "binding": "KV", "id": "REPLACE_ME" }
   ],
+  // Optional native per-IP rate limits (the worker also enforces KV-based limits).
+  "ratelimits": [
+    { "name": "RL_REGISTER", "namespace_id": "1001", "simple": { "limit": 5, "period": 60 } },
+    { "name": "RL_VERIFY", "namespace_id": "1002", "simple": { "limit": 10, "period": 60 } },
+    { "name": "RL_ACTIVATE", "namespace_id": "1003", "simple": { "limit": 10, "period": 60 } }
+  ],
+  "observability": { "enabled": true },
   "r2_buckets": [
     { "binding": "DIST", "bucket_name": "grok-orbit-dist" }
   ]
